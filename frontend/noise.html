@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Noise Testing - Audio Steganography</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <div class="container">
+            <a href="index.html" class="logo">
+                🎵 Audio Steganography
+            </a>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="encode.html">Encode</a></li>
+                <li><a href="decode.html">Decode</a></li>
+                <li><a href="noise.html" class="active">Noise Test</a></li>
+            </ul>
+            <div class="menu-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container text-center">
+            <h1>🔊 Noise Robustness Testing</h1>
+            <p>Test embedded messages against various noise conditions</p>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <section>
+        <div class="container">
+            <!-- Status Messages -->
+            <div id="statusContainer" class="status-container"></div>
+
+            <!-- Step 1: Upload Audio -->
+            <div class="card mb-3">
+                <h2 class="card-title card-title-primary">
+                    <span class="icon-xl">📤</span> Step 1: Upload Encoded Audio
+                </h2>
+                <p class="section-subtitle">Select an encoded audio file to test against noise</p>
+                
+                <div class="form-group">
+                    <label for="encodedAudio">Select Encoded WAV File</label>
+                    <input 
+                        type="file" 
+                        id="encodedAudio" 
+                        accept=".wav"
+                        class="file-input"
+                    >
+                    <small class="file-input-info">Upload the encoded audio file to be tested</small>
+                </div>
+
+                <div id="audioInfo" class="panel panel--primary hidden">
+                    <p class="text-muted"><strong>File Selected:</strong> <span id="audioFileName"></span></p>
+                    <p class="text-muted mt-1">Size: <span id="audioFileSize"></span></p>
+                </div>
+            </div>
+
+            <!-- Step 2: Noise Configuration -->
+            <div class="card mb-3">
+                <h2 class="card-title card-title-secondary">
+                    <span class="icon-xl">⚙️</span> Step 2: Configure Noise Parameters
+                </h2>
+                <p class="section-subtitle">Select noise types and levels to apply</p>
+                
+                <div class="grid">
+                    <div class="panel panel--success">
+                        <h4 class="section-subheading">📊 Gaussian Noise</h4>
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="enableGaussian" value="gaussian">
+                                Enable Gaussian Noise
+                            </label>
+                            <small class="file-input-info">White noise with normal distribution</small>
+                        </div>
+
+                        <div class="form-group hidden" id="gaussianOptions">
+                            <label for="gaussianLevel">Noise Level (SNR dB): <span class="text-highlight" id="gaussianValue">20</span></label>
+                            <input 
+                                type="range" 
+                                id="gaussianLevel" 
+                                min="5" 
+                                max="40" 
+                                value="20"
+                                class="range-control"
+                            >
+                            <small class="file-input-info">Higher dB = less noise, 20 dB = moderate noise</small>
+                        </div>
+                    </div>
+
+                    <div class="panel panel--success">
+                        <h4 class="section-subheading">🌊 White Noise</h4>
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="enableWhite" value="white">
+                                Enable White Noise
+                            </label>
+                            <small class="file-input-info">Uniform noise across all frequencies</small>
+                        </div>
+
+                        <div class="form-group hidden" id="whiteOptions">
+                            <label for="whiteLevel">Noise Level (SNR dB): <span class="text-highlight" id="whiteValue">20</span></label>
+                            <input 
+                                type="range" 
+                                id="whiteLevel" 
+                                min="5" 
+                                max="40" 
+                                value="20"
+                                class="range-control"
+                            >
+                            <small class="file-input-info">Higher dB = less noise, 20 dB = moderate noise</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Preset Scenarios -->
+                <details class="detail-panel mt-3">
+                    <summary>📋 Preset Test Scenarios</summary>
+                    <div class="preset-grid">
+                        <button class="btn btn-secondary" onclick="applyPreset('clean')">
+                            ✓ Clean (No Noise)
+                        </button>
+                        <button class="btn btn-secondary" onclick="applyPreset('light')">
+                            Light Noise (30 dB)
+                        </button>
+                        <button class="btn btn-secondary" onclick="applyPreset('moderate')">
+                            Moderate (20 dB)
+                        </button>
+                        <button class="btn btn-secondary" onclick="applyPreset('heavy')">
+                            Heavy (10 dB)
+                        </button>
+                    </div>
+                </details>
+            </div>
+
+            <!-- Step 3: Run Tests -->
+            <div class="card mb-3">
+                <h2 class="card-title card-title-primary">
+                    <span class="icon-xl">🚀</span> Step 3: Run Robustness Testing
+                </h2>
+                <p class="section-subtitle">Apply noise and decode the message</p>
+                
+                <div class="button-group">
+                    <button 
+                        id="testBtn" 
+                        class="btn btn-primary btn-large"
+                    >
+                        🧪 Run Noise Test & Decode
+                    </button>
+                    <button 
+                        id="resetBtn" 
+                        class="btn btn-secondary btn-large"
+                    >
+                        ↻ Reset
+                    </button>
+                </div>
+
+                <!-- Testing Progress -->
+                <div id="testingProgress" class="hidden mt-2">
+                    <p class="text-muted mb-1">Running noise test and decoding...</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <p id="progressText" class="text-muted metric-caption"></p>
+                </div>
+            </div>
+
+            <!-- Step 4: Results -->
+            <div class="card hidden" id="resultsSection">
+                <h2 class="card-title card-title-secondary">
+                    <span class="icon-xl">📊</span> Test Results
+                </h2>
+
+                <!-- Test Conditions -->
+                <div class="panel panel--primary mb-3">
+                    <h3 class="card-title card-title-secondary mb-1">Applied Noise Conditions</h3>
+                    <div class="grid two-col text-muted">
+                        <div id="noiseConditions"></div>
+                    </div>
+                </div>
+
+                <!-- Recovered Message -->
+                <div class="panel panel--success mb-3">
+                    <h3 class="card-title card-title-primary mb-1">Recovered Message</h3>
+                    <label for="recoveredMessage" class="panel__text panel__text--spaced">Recovered audio message output</label>
+                    <textarea 
+                        id="recoveredMessage" 
+                        readonly
+                        class="text-area-muted min-height-80"
+                        title="Recovered message output"
+                    ></textarea>
+                </div>
+
+                <!-- Success Metrics -->
+                <div class="grid">
+                    <div class="metric-panel">
+                        <p class="text-muted mb-1"><strong>Success Rate</strong></p>
+                        <p class="metric-value card-title card-title-primary"><span id="successRate">--%</span></p>
+                        <p class="metric-caption">Message recovery accuracy</p>
+                    </div>
+
+                    <div class="metric-panel">
+                        <p class="text-muted mb-1"><strong>Confidence Level</strong></p>
+                        <p class="metric-value card-title card-title-secondary"><span id="confidence">--</span></p>
+                        <p class="metric-caption">Detection confidence</p>
+                    </div>
+
+                    <div class="metric-panel">
+                        <p class="text-muted mb-1"><strong>Bit Error Rate</strong></p>
+                        <p class="metric-value card-title text-warning"><span id="ber">--%</span></p>
+                        <p class="metric-caption">Bit-level errors detected</p>
+                    </div>
+
+                    <div class="metric-panel">
+                        <p class="text-muted mb-1"><strong>SNR (Measured)</strong></p>
+                        <p class="metric-value card-title card-title-secondary"><span id="snr">--</span> dB</p>
+                        <p class="metric-caption">Signal-to-noise ratio</p>
+                    </div>
+                </div>
+
+                <!-- Performance Chart Placeholder -->
+                <div class="mt-2">
+                    <h3 class="card-title card-title-primary mb-1">📈 Robustness Performance</h3>
+                    <div id="chartPlaceholder" class="chart-placeholder">
+                        <div class="text-center">
+                            <p class="icon-xl">📊</p>
+                            <p class="mt-1">Performance chart visualization (to be implemented with backend data)</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Summary -->
+                <div class="panel panel--primary mt-3">
+                    <h3 class="card-title card-title-secondary mb-1">Test Summary</h3>
+                    <ul class="summary-list">
+                        <li id="summaryPoint1"></li>
+                        <li id="summaryPoint2"></li>
+                        <li id="summaryPoint3"></li>
+                    </ul>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="button-group mt-2">
+                    <button id="exportResultsBtn" class="btn btn-primary btn-small">
+                        💾 Export Results
+                    </button>
+                    <button id="runAnother" class="btn btn-secondary btn-small">
+                        ➕ Run Another Test
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Information Section -->
+    <section class="info-section">
+        <div class="container">
+            <details class="detail-panel">
+                <summary>ℹ️ About Noise Testing & Metrics</summary>
+                <div class="detail-panel__content">
+                    <h4 class="section-subheading">Signal-to-Noise Ratio (SNR)</h4>
+                    <p>Measured in decibels (dB). Higher values indicate cleaner signals. 20 dB = moderate noise, 40 dB = very clean.</p>
+                    
+                    <h4 class="section-subheading">Bit Error Rate (BER)</h4>
+                    <p>Percentage of message bits corrupted by noise. Lower is better. 0% = perfect recovery, >10% = significant corruption.</p>
+                    
+                    <h4 class="section-subheading">Success Rate</h4>
+                    <p>Overall message recovery accuracy. Accounts for both bit errors and overall coherence of extracted message.</p>
+                    
+                    <h4 class="section-subheading">Noise Types</h4>
+                    <ul class="content-list">
+                        <li><strong>Gaussian Noise:</strong> Random white noise with normal distribution (realistic background noise)</li>
+                        <li><strong>White Noise:</strong> Uniform noise across all frequencies (synthetic test condition)</li>
+                    </ul>
+                </div>
+            </details>
+        </div>
+    </section>
+
+    <script src="script.js"></script>
+    <script>
+        // Noise testing page specific functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const encodedAudio = document.getElementById('encodedAudio');
+            const enableGaussian = document.getElementById('enableGaussian');
+            const enableWhite = document.getElementById('enableWhite');
+            const gaussianLevel = document.getElementById('gaussianLevel');
+            const whiteLevel = document.getElementById('whiteLevel');
+            const testBtn = document.getElementById('testBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const runAnother = document.getElementById('runAnother');
+
+            // File input handler
+            encodedAudio.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    document.getElementById('audioFileName').textContent = file.name;
+                    document.getElementById('audioFileSize').textContent = (file.size / 1024).toFixed(2) + ' KB';
+                    document.getElementById('audioInfo').style.display = 'block';
+                }
+            });
+
+            // Noise enable/disable handlers
+            enableGaussian.addEventListener('change', function() {
+                document.getElementById('gaussianOptions').style.display = this.checked ? 'block' : 'none';
+            });
+
+            enableWhite.addEventListener('change', function() {
+                document.getElementById('whiteOptions').style.display = this.checked ? 'block' : 'none';
+            });
+
+            // Update slider displays
+            gaussianLevel.addEventListener('input', function() {
+                document.getElementById('gaussianValue').textContent = this.value;
+            });
+
+            whiteLevel.addEventListener('input', function() {
+                document.getElementById('whiteValue').textContent = this.value;
+            });
+
+            // Test button handler
+            testBtn.addEventListener('click', function() {
+                const file = encodedAudio.files[0];
+                const hasGaussian = enableGaussian.checked;
+                const hasWhite = enableWhite.checked;
+
+                if (!file) {
+                    showStatus('Please select an encoded audio file', 'error');
+                    return;
+                }
+
+                if (!hasGaussian && !hasWhite) {
+                    showStatus('Please select at least one noise type to test', 'error');
+                    return;
+                }
+
+                // Show progress
+                document.getElementById('testingProgress').style.display = 'block';
+                testBtn.disabled = true;
+                
+                // Build noise conditions display
+                let noiseDisplay = '';
+                if (hasGaussian) {
+                    noiseDisplay += `<p>📊 <strong>Gaussian Noise:</strong> ${gaussianLevel.value} dB SNR</p>`;
+                }
+                if (hasWhite) {
+                    noiseDisplay += `<p>🌊 <strong>White Noise:</strong> ${whiteLevel.value} dB SNR</p>`;
+                }
+                document.getElementById('noiseConditions').innerHTML = noiseDisplay;
+                
+                // Simulate progress
+                let progress = 0;
+                const steps = [
+                    'Loading audio file...',
+                    'Applying noise conditions...',
+                    'Decoding with noise present...',
+                    'Calculating metrics...',
+                    'Finalizing results...'
+                ];
+                let step = 0;
+
+                const interval = setInterval(() => {
+                    progress += Math.random() * 20;
+                    if (progress > 95) progress = 95;
+                    document.getElementById('progressFill').style.width = progress + '%';
+                    
+                    if (step < steps.length) {
+                        document.getElementById('progressText').textContent = steps[step];
+                        step++;
+                    }
+                }, 300);
+
+                // Simulate testing (replace with actual backend call)
+                setTimeout(() => {
+                    clearInterval(interval);
+                    document.getElementById('progressFill').style.width = '100%';
+                    
+                    // Mock results
+                    const mockMessage = 'Hello from steganography!';
+                    const avgSnr = hasGaussian ? parseInt(gaussianLevel.value) : parseInt(whiteLevel.value);
+                    const successRate = Math.max(60, Math.min(99, 100 - (40 - avgSnr) * 2));
+                    const ber = 100 - successRate;
+                    const confidence = successRate >= 90 ? 'High' : successRate >= 70 ? 'Medium' : 'Low';
+                    
+                    // Display results
+                    document.getElementById('recoveredMessage').value = mockMessage;
+                    document.getElementById('successRate').textContent = Math.round(successRate) + '%';
+                    document.getElementById('confidence').textContent = confidence;
+                    document.getElementById('ber').textContent = ber.toFixed(1) + '%';
+                    document.getElementById('snr').textContent = avgSnr;
+                    
+                    // Summary
+                    document.getElementById('summaryPoint1').textContent = `Message successfully recovered with ${Math.round(successRate)}% accuracy`;
+                    document.getElementById('summaryPoint2').textContent = `Noise robustness level: ${confidence} (${avgSnr} dB SNR)`;
+                    document.getElementById('summaryPoint3').textContent = `System demonstrates ${successRate > 85 ? 'excellent' : 'good'} resistance to applied noise conditions`;
+                    
+                    document.getElementById('resultsSection').style.display = 'block';
+                    showStatus('✓ Noise test completed successfully!', 'success');
+                    
+                    setTimeout(() => {
+                        document.getElementById('testingProgress').style.display = 'none';
+                        testBtn.disabled = false;
+                    }, 1000);
+                }, 3000);
+            });
+
+            // Reset button handler
+            resetBtn.addEventListener('click', function() {
+                encodedAudio.value = '';
+                enableGaussian.checked = false;
+                enableWhite.checked = false;
+                gaussianLevel.value = '20';
+                whiteLevel.value = '20';
+                document.getElementById('gaussianOptions').style.display = 'none';
+                document.getElementById('whiteOptions').style.display = 'none';
+                document.getElementById('audioInfo').style.display = 'none';
+                document.getElementById('resultsSection').style.display = 'none';
+                document.getElementById('statusContainer').innerHTML = '';
+            });
+
+            // Run another handler
+            runAnother.addEventListener('click', function() {
+                resetBtn.click();
+            });
+        });
+
+        // Global preset function
+        function applyPreset(preset) {
+            const enableGaussian = document.getElementById('enableGaussian');
+            const enableWhite = document.getElementById('enableWhite');
+            const gaussianLevel = document.getElementById('gaussianLevel');
+            const whiteLevel = document.getElementById('whiteLevel');
+
+            switch(preset) {
+                case 'clean':
+                    enableGaussian.checked = false;
+                    enableWhite.checked = false;
+                    document.getElementById('gaussianOptions').style.display = 'none';
+                    document.getElementById('whiteOptions').style.display = 'none';
+                    showStatus('✓ Clean test scenario selected (no noise)', 'info');
+                    break;
+                case 'light':
+                    enableGaussian.checked = true;
+                    enableWhite.checked = false;
+                    gaussianLevel.value = '30';
+                    document.getElementById('gaussianOptions').style.display = 'block';
+                    document.getElementById('whiteOptions').style.display = 'none';
+                    document.getElementById('gaussianValue').textContent = '30';
+                    showStatus('✓ Light noise scenario selected (30 dB SNR)', 'info');
+                    break;
+                case 'moderate':
+                    enableGaussian.checked = true;
+                    enableWhite.checked = true;
+                    gaussianLevel.value = '20';
+                    whiteLevel.value = '20';
+                    document.getElementById('gaussianOptions').style.display = 'block';
+                    document.getElementById('whiteOptions').style.display = 'block';
+                    document.getElementById('gaussianValue').textContent = '20';
+                    document.getElementById('whiteValue').textContent = '20';
+                    showStatus('✓ Moderate noise scenario selected (20 dB SNR)', 'info');
+                    break;
+                case 'heavy':
+                    enableGaussian.checked = true;
+                    enableWhite.checked = true;
+                    gaussianLevel.value = '10';
+                    whiteLevel.value = '10';
+                    document.getElementById('gaussianOptions').style.display = 'block';
+                    document.getElementById('whiteOptions').style.display = 'block';
+                    document.getElementById('gaussianValue').textContent = '10';
+                    document.getElementById('whiteValue').textContent = '10';
+                    showStatus('✓ Heavy noise scenario selected (10 dB SNR)', 'warning');
+                    break;
+            }
+        }
+
+        function showStatus(message, type) {
+            const statusContainer = document.getElementById('statusContainer');
+            const statusBox = document.createElement('div');
+            statusBox.className = 'status-box ' + type;
+            statusBox.innerHTML = `
+                <span class="status-icon">${getStatusIcon(type)}</span>
+                <span>${message}</span>
+            `;
+            statusContainer.innerHTML = '';
+            statusContainer.appendChild(statusBox);
+        }
+
+        function getStatusIcon(type) {
+            const icons = {
+                'success': '✓',
+                'error': '✕',
+                'info': 'ℹ',
+                'warning': '⚠'
+            };
+            return icons[type] || 'ℹ';
+        }
+    </script>
+</body>
+</html>

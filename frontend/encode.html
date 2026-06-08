@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Message Encoding - Audio Steganography</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <div class="container">
+            <a href="index.html" class="logo">
+                🎵 Audio Steganography
+            </a>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="encode.html" class="active">Encode</a></li>
+                <li><a href="decode.html">Decode</a></li>
+                <li><a href="noise.html">Noise Test</a></li>
+            </ul>
+            <div class="menu-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container text-center">
+            <h1>🔐 Message Encoding</h1>
+            <p>Hide a secret message inside a WAV audio file</p>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <section>
+        <div class="container">
+            <!-- Status Messages -->
+            <div id="statusContainer" class="status-container"></div>
+
+            <!-- Step 1: Upload Audio -->
+            <div class="card mb-3">
+                <h2 class="card-title card-title-primary section-title">
+                    <span class="icon-xl">📤</span> Step 1: Upload Audio File
+                </h2>
+                <p class="section-description">Select a WAV file to embed the message into</p>
+                
+                <div class="form-group">
+                    <label for="audioFile">Select WAV File</label>
+                    <input 
+                        type="file" 
+                        id="audioFile" 
+                        accept=".wav" 
+                        class="file-input"
+                    >
+                    <small class="file-input-info">Supported: .wav (PCM, 16-bit, 44.1-48 kHz)</small>
+                </div>
+
+                <div id="audioInfo" class="panel panel--primary hidden">
+                    <p class="panel__text"><strong>File Selected:</strong> <span id="audioFileName"></span></p>
+                    <p class="panel__text panel__text--spaced">Size: <span id="audioFileSize"></span></p>
+                </div>
+            </div>
+
+            <!-- Step 2: Enter Secret Message -->
+            <div class="card mb-3">
+                <h2 class="card-title card-title-secondary section-title">
+                    <span class="icon-xl">💬</span> Step 2: Enter Secret Message
+                </h2>
+                <p class="section-description">Type the message you want to hide (alphanumeric only)</p>
+                
+                <div class="form-group">
+                    <label for="secretMessage">Secret Message</label>
+                    <textarea 
+                        id="secretMessage" 
+                        placeholder="Enter your message here... (alphanumeric: A-Z, 0-9, spaces)"
+                        maxlength="1000"
+                    ></textarea>
+                </div>
+
+                <div class="row-between">
+                    <small class="panel__text">Max length: 1000 characters</small>
+                    <small class="text-highlight"><span id="charCount">0</span>/1000</small>
+                </div>
+            </div>
+
+            <!-- Step 3: DWT Parameters -->
+            <div class="card mb-3">
+                <h2 class="card-title card-title-tertiary section-title">
+                    <span class="icon-xl">⚙️</span> Step 3: Configure DWT Parameters
+                </h2>
+                <p class="section-description">Choose wavelet and decomposition settings</p>
+                
+                <div class="grid two-col">
+                    <div class="form-group">
+                        <label for="waveletFamily">Wavelet Family</label>
+                        <select id="waveletFamily">
+                            <option value="db1">Daubechies 1 (db1)</option>
+                            <option value="db2">Daubechies 2 (db2)</option>
+                            <option value="db4" selected>Daubechies 4 (db4)</option>
+                            <option value="db8">Daubechies 8 (db8)</option>
+                            <option value="sym2">Symlet 2 (sym2)</option>
+                            <option value="sym4">Symlet 4 (sym4)</option>
+                        </select>
+                        <small class="file-input-info">Higher order = better frequency separation</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="dwLevel">DWT Decomposition Level: <span class="text-highlight" id="dwLevelValue">2</span></label>
+                        <input 
+                            type="range" 
+                            id="dwLevel" 
+                            min="1" 
+                            max="5" 
+                            value="2"
+                            class="range-control"
+                        >
+                        <small class="file-input-info">1 = shallow, 5 = deep decomposition</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="embeddingStrength">Embedding Strength: <span class="text-highlight" id="embeddingValue">0.5</span></label>
+                        <input 
+                            type="range" 
+                            id="embeddingStrength" 
+                            min="0.1" 
+                            max="1.0" 
+                            step="0.1" 
+                            value="0.5"
+                            class="range-control"
+                        >
+                        <small class="file-input-info">0.1 = subtle, 1.0 = maximum robustness</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="targetBandwidth">Target Bandwidth: <span class="text-highlight" id="bandwidthValue">Medium</span></label>
+                        <select id="targetBandwidth">
+                            <option value="low">Low (2-8 kHz) - Subtle</option>
+                            <option value="medium" selected>Medium (8-16 kHz) - Balanced</option>
+                            <option value="high">High (16-22 kHz) - Robust</option>
+                        </select>
+                        <small class="file-input-info">Frequency range for message embedding</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 4: Execute Encoding -->
+            <div class="card mb-3">
+                <h2 class="card-title card-title-primary section-title">
+                    <span class="icon-xl">🚀</span> Step 4: Generate Encoded Audio
+                </h2>
+                <p class="section-description">Click to start encoding process</p>
+                
+                <div class="button-group">
+                    <button 
+                        id="encodeBtn" 
+                        class="btn btn-primary btn-large"
+                    >
+                        🔒 Encode Message into Audio
+                    </button>
+                    <button 
+                        id="resetBtn" 
+                        class="btn btn-secondary btn-large"
+                    >
+                        ↻ Reset Form
+                    </button>
+                </div>
+
+                <!-- Encoding Progress -->
+                <div id="encodingProgress" class="hidden mt-2">
+                    <p class="panel__text">Processing...</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Download Section -->
+            <div class="card hidden" id="downloadSection">
+                <h2 class="card-title card-title-success section-title">
+                    <span class="icon-xl">✓</span> Encoding Complete!
+                </h2>
+                <p class="section-description">Your message has been successfully encoded.</p>
+                
+                <div class="panel panel--success">
+                    <p class="panel__text panel__text--spaced"><strong>Message Encoded:</strong></p>
+                    <p class="text-highlight font-mono" id="encodedMessageDisplay"></p>
+                    <p class="panel__text panel__text--spaced"><strong>Encoding Parameters:</strong></p>
+                    <ul class="content-list">
+                        <li>Wavelet: <span id="paramWavelet"></span></li>
+                        <li>Decomposition Level: <span id="paramLevel"></span></li>
+                        <li>Embedding Strength: <span id="paramStrength"></span></li>
+                    </ul>
+                </div>
+
+                <div class="button-group">
+                    <button id="downloadBtn" class="btn btn-primary btn-large">
+                        💾 Download Encoded Audio
+                    </button>
+                    <button id="encodeAnother" class="btn btn-secondary btn-large">
+                        ➕ Encode Another
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Information Section -->
+    <section class="info-section">
+        <div class="container">
+            <details class="detail-panel">
+                <summary>ℹ️ Understanding DWT Parameters</summary>
+                <div class="detail-panel__content">
+                    <h4 class="section-subheading">Wavelet Family</h4>
+                    <p>Different wavelets offer different time-frequency properties. Daubechies (db) wavelets are commonly used for audio steganography.</p>
+                    
+                    <h4 class="section-subheading">Decomposition Level</h4>
+                    <p>Higher levels provide deeper frequency decomposition but require longer audio files. Level 2-3 is typically optimal.</p>
+                    
+                    <h4 class="section-subheading">Embedding Strength</h4>
+                    <p>Controls message amplitude. Higher values increase robustness but may introduce audible artifacts at extreme values.</p>
+                    
+                    <h4 class="section-subheading">Target Bandwidth</h4>
+                    <p>Specifies frequency range for embedding. Lower frequencies are less noticeable but less robust; higher frequencies are more robust.</p>
+                </div>
+            </details>
+        </div>
+    </section>
+
+    <script src="script.js"></script>
+    <script>
+        // Encode page specific functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const audioFile = document.getElementById('audioFile');
+            const secretMessage = document.getElementById('secretMessage');
+            const dwLevel = document.getElementById('dwLevel');
+            const embeddingStrength = document.getElementById('embeddingStrength');
+            const targetBandwidth = document.getElementById('targetBandwidth');
+            const encodeBtn = document.getElementById('encodeBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const charCount = document.getElementById('charCount');
+
+            // File input handler
+            audioFile.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    document.getElementById('audioFileName').textContent = file.name;
+                    document.getElementById('audioFileSize').textContent = (file.size / 1024).toFixed(2) + ' KB';
+                    document.getElementById('audioInfo').style.display = 'block';
+                }
+            });
+
+            // Character counter
+            secretMessage.addEventListener('input', function() {
+                charCount.textContent = this.value.length;
+            });
+
+            // Update slider displays
+            dwLevel.addEventListener('input', function() {
+                document.getElementById('dwLevelValue').textContent = this.value;
+            });
+
+            embeddingStrength.addEventListener('input', function() {
+                document.getElementById('embeddingValue').textContent = this.value;
+            });
+
+            targetBandwidth.addEventListener('change', function() {
+                const labels = {
+                    'low': 'Low',
+                    'medium': 'Medium',
+                    'high': 'High'
+                };
+                document.getElementById('bandwidthValue').textContent = labels[this.value];
+            });
+
+            // Encode button handler
+            encodeBtn.addEventListener('click', function() {
+                const file = audioFile.files[0];
+                const message = secretMessage.value.trim();
+
+                // Validation
+                if (!file) {
+                    showStatus('Please select a WAV file', 'error');
+                    return;
+                }
+                if (!message) {
+                    showStatus('Please enter a message to encode', 'error');
+                    return;
+                }
+                if (!/^[a-zA-Z0-9\s]*$/.test(message)) {
+                    showStatus('Message must contain only alphanumeric characters and spaces', 'error');
+                    return;
+                }
+
+                // Show progress
+                document.getElementById('encodingProgress').style.display = 'block';
+                encodeBtn.disabled = true;
+                
+                // Simulate progress
+                let progress = 0;
+                const interval = setInterval(() => {
+                    progress += Math.random() * 30;
+                    if (progress > 90) progress = 90;
+                    document.getElementById('progressFill').style.width = progress + '%';
+                }, 100);
+
+                // Simulate encoding (replace with actual backend call)
+                setTimeout(() => {
+                    clearInterval(interval);
+                    document.getElementById('progressFill').style.width = '100%';
+                    
+                    // Display results
+                    document.getElementById('encodedMessageDisplay').textContent = '"' + message + '"';
+                    document.getElementById('paramWavelet').textContent = document.getElementById('waveletFamily').value;
+                    document.getElementById('paramLevel').textContent = dwLevel.value;
+                    document.getElementById('paramStrength').textContent = embeddingStrength.value;
+                    
+                    document.getElementById('downloadSection').style.display = 'block';
+                    showStatus('✓ Message successfully encoded!', 'success');
+                    
+                    setTimeout(() => {
+                        document.getElementById('encodingProgress').style.display = 'none';
+                        encodeBtn.disabled = false;
+                    }, 1000);
+                }, 2000);
+            });
+
+            // Reset button handler
+            resetBtn.addEventListener('click', function() {
+                audioFile.value = '';
+                secretMessage.value = '';
+                charCount.textContent = '0';
+                dwLevel.value = '2';
+                document.getElementById('dwLevelValue').textContent = '2';
+                embeddingStrength.value = '0.5';
+                document.getElementById('embeddingValue').textContent = '0.5';
+                targetBandwidth.value = 'medium';
+                document.getElementById('bandwidthValue').textContent = 'Medium';
+                document.getElementById('audioInfo').style.display = 'none';
+                document.getElementById('downloadSection').style.display = 'none';
+                document.getElementById('statusContainer').innerHTML = '';
+            });
+
+            // Download button handler
+            document.getElementById('downloadBtn').addEventListener('click', function() {
+                showStatus('Download functionality will be connected to backend', 'info');
+            });
+
+            // Encode another button handler
+            document.getElementById('encodeAnother').addEventListener('click', function() {
+                resetBtn.click();
+            });
+        });
+
+        function showStatus(message, type) {
+            const statusContainer = document.getElementById('statusContainer');
+            const statusBox = document.createElement('div');
+            statusBox.className = 'status-box ' + type;
+            statusBox.innerHTML = `
+                <span class="status-icon">${getStatusIcon(type)}</span>
+                <span>${message}</span>
+            `;
+            statusContainer.innerHTML = '';
+            statusContainer.appendChild(statusBox);
+        }
+
+        function getStatusIcon(type) {
+            const icons = {
+                'success': '✓',
+                'error': '✕',
+                'info': 'ℹ',
+                'warning': '⚠'
+            };
+            return icons[type] || 'ℹ';
+        }
+    </script>
+</body>
+</html>

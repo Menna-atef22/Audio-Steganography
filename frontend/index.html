@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Steganography System - Home</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <div class="container">
+            <a href="index.html" class="logo">
+                🎵 Audio Steganography
+            </a>
+            <ul>
+                <li><a href="index.html" class="active">Home</a></li>
+                <li><a href="encode.html">Encode</a></li>
+                <li><a href="decode.html">Decode</a></li>
+                <li><a href="noise.html">Noise Test</a></li>
+            </ul>
+            <div class="menu-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container text-center">
+            <h1>Audio Steganography System</h1>
+            <p>Hide Secret Messages in Audio Files Using Advanced Signal Processing</p>
+            <div class="description">
+                <p>Embed alphanumeric messages imperceptibly within WAV audio files using <strong>Discrete Wavelet Transform (DWT)</strong> and <strong>Spread Spectrum</strong> techniques. Recover hidden messages with high fidelity, even in the presence of noise.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <section>
+        <div class="container">
+            <h2 class="section-heading">Core Features</h2>
+            
+            <div class="grid">
+                <!-- Feature 1: Encoding -->
+                <div class="card">
+                    <h3 class="card-title card-title-primary">🔐 Message Encoding</h3>
+                    <p class="panel-text">Hide secret messages inside WAV audio files using advanced DWT decomposition and spread spectrum embedding.</p>
+                    <ul class="content-list">
+                        <li>Support for multiple wavelet families</li>
+                        <li>Configurable embedding strength</li>
+                        <li>Imperceptible message hiding</li>
+                    </ul>
+                    <div class="button-group">
+                        <a href="encode.html" class="btn btn-primary">Start Encoding</a>
+                    </div>
+                </div>
+
+                <!-- Feature 2: Decoding -->
+                <div class="card">
+                    <h3 class="card-title card-title-secondary">🔓 Message Decoding</h3>
+                    <p class="panel-text">Extract hidden messages from stego-audio files using correlation-based detection and signal reconstruction.</p>
+                    <ul class="content-list">
+                        <li>Robust message recovery</li>
+                        <li>Automatic parameter detection</li>
+                        <li>Confidence scoring</li>
+                    </ul>
+                    <div class="button-group">
+                        <a href="decode.html" class="btn btn-primary">Start Decoding</a>
+                    </div>
+                </div>
+
+                <!-- Feature 3: Noise Testing -->
+                <div class="card">
+                    <h3 class="card-title card-title-tertiary">🔊 Noise Robustness</h3>
+                    <p class="panel-text">Test the robustness of embedded messages against various types of noise and signal degradation.</p>
+                    <ul class="content-list">
+                        <li>Gaussian noise simulation</li>
+                        <li>White noise testing</li>
+                        <li>Success rate metrics</li>
+                    </ul>
+                    <div class="button-group">
+                        <a href="noise.html" class="btn btn-primary">Test Robustness</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="info-section">
+        <div class="container">
+            <h2 class="section-heading">How DWT + Spread Spectrum Works</h2>
+            
+            <div class="grid two-col">
+                <div class="panel panel--primary">
+                    <h3 class="card-title card-title-secondary">📊 Discrete Wavelet Transform (DWT)</h3>
+                    <p class="panel-text">
+                        DWT decomposes audio signals into multiple frequency bands at different scales. This hierarchical decomposition isolates signal features and provides an ideal domain for hiding information:
+                    </p>
+                    <ul class="content-list">
+                        <li>Approximation coefficients (low-frequency)</li>
+                        <li>Detail coefficients (high-frequency)</li>
+                        <li>Multi-level decomposition for robustness</li>
+                    </ul>
+                </div>
+
+                <div class="panel panel--primary">
+                    <h3 class="card-title card-title-secondary">🌊 Spread Spectrum Embedding</h3>
+                    <p class="panel-text">
+                        Spread Spectrum distributes the secret message across multiple frequency bands, reducing the signal amplitude needed per bit:
+                    </p>
+                    <ul class="content-list">
+                        <li>Message spread across bands</li>
+                        <li>Reduced detectability</li>
+                        <li>Improved noise resilience</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="text-center mt-3">
+                <h3 class="card-title card-title-primary mb-2">Workflow Overview</h3>
+                <div class="flow-panel">
+                    <div class="flow-step">📁 Audio File</div>
+                    <div class="flow-step">→</div>
+                    <div class="flow-step">🌊 DWT</div>
+                    <div class="flow-step">→</div>
+                    <div class="flow-step">📡 Spread</div>
+                    <div class="flow-step">→</div>
+                    <div class="flow-step">🔒 Encoded</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- System Requirements -->
+    <section>
+        <div class="container">
+            <h2 class="section-heading">System Requirements</h2>
+            
+            <div class="grid">
+                <div class="card">
+                    <h4 class="section-subheading mb-1">Audio Format</h4>
+                    <p class="text-muted">WAV files only (uncompressed or PCM compressed)</p>
+                </div>
+                <div class="card">
+                    <h4 class="section-subheading mb-1">Message Type</h4>
+                    <p class="text-muted">Alphanumeric text (A-Z, 0-9, spaces)</p>
+                </div>
+                <div class="card">
+                    <h4 class="section-subheading mb-1">Audio Quality</h4>
+                    <p class="text-muted">16-bit PCM, 44.1 kHz - 48 kHz, Mono/Stereo</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container">
+            <h2 class="section-heading">Ready to Get Started?</h2>
+            <p class="section-subtitle">Choose your operation below</p>
+            <div class="button-group">
+                <a href="encode.html" class="btn btn-primary btn-large">🔐 Encode Message</a>
+                <a href="decode.html" class="btn btn-secondary btn-large">🔓 Decode Message</a>
+                <a href="noise.html" class="btn btn-secondary btn-large">🔊 Test Robustness</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 Audio Steganography System | DSP-Based Signal Processing | All Rights Reserved</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

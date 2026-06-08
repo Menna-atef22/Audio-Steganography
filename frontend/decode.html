@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Message Decoding - Audio Steganography</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <div class="container">
+            <a href="index.html" class="logo">
+                🎵 Audio Steganography
+            </a>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="encode.html">Encode</a></li>
+                <li><a href="decode.html" class="active">Decode</a></li>
+                <li><a href="noise.html">Noise Test</a></li>
+            </ul>
+            <div class="menu-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container text-center">
+            <h1>🔓 Message Decoding</h1>
+            <p>Extract hidden messages from encoded audio files</p>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <section>
+        <div class="container">
+            <!-- Status Messages -->
+            <div id="statusContainer" class="status-container"></div>
+
+            <!-- Step 1: Upload Encoded Audio -->
+            <div class="card mb-3">
+                <h2 class="card-title card-title-primary">
+                    <span class="icon-xl">📤</span> Step 1: Upload Encoded Audio
+                </h2>
+                <p class="section-description">Select the WAV file containing the hidden message</p>
+                
+                <div class="form-group">
+                    <label for="stegoAudio">Select Encoded WAV File</label>
+                    <input 
+                        type="file" 
+                        id="stegoAudio" 
+                        accept=".wav"
+                        class="file-input"
+                    >
+                    <small class="file-input-info">Upload the encoded audio file from the Encoding page</small>
+                </div>
+
+                <div id="audioInfo" class="panel panel--primary hidden">
+                    <p class="panel__text"><strong>File Selected:</strong> <span id="audioFileName"></span></p>
+                    <p class="panel__text panel__text--spaced">Size: <span id="audioFileSize"></span></p>
+                </div>
+            </div>
+
+            <!-- Step 2: Extraction Parameters -->
+            <div class="card mb-3">
+                <h2 class="card-title card-title-secondary">
+                    <span class="icon-xl">⚙️</span> Step 2: Configure Extraction Parameters
+                </h2>
+                <p class="section-description">Use the same parameters as encoding for optimal recovery</p>
+                
+                <div class="grid two-col">
+                    <div class="form-group">
+                        <label for="waveletFamily">Wavelet Family (must match encoding)</label>
+                        <select id="waveletFamily">
+                            <option value="db1">Daubechies 1 (db1)</option>
+                            <option value="db2">Daubechies 2 (db2)</option>
+                            <option value="db4" selected>Daubechies 4 (db4)</option>
+                            <option value="db8">Daubechies 8 (db8)</option>
+                            <option value="sym2">Symlet 2 (sym2)</option>
+                            <option value="sym4">Symlet 4 (sym4)</option>
+                        </select>
+                        <small class="file-input-info">Critical: Must match the wavelet used for encoding</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="dwLevel">DWT Decomposition Level: <span class="text-highlight" id="dwLevelValue">2</span></label>
+                        <input 
+                            type="range" 
+                            id="dwLevel" 
+                            min="1" 
+                            max="5" 
+                            value="2"
+                            class="range-control"
+                        >
+                        <small class="file-input-info">Must match encoding decomposition level</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="sensitivity">Extraction Sensitivity: <span class="text-highlight" id="sensitivityValue">0.5</span></label>
+                        <input 
+                            type="range" 
+                            id="sensitivity" 
+                            min="0.1" 
+                            max="1.0" 
+                            step="0.1" 
+                            value="0.5"
+                            class="range-control"
+                        >
+                        <small class="file-input-info">0.1 = lenient, 1.0 = strict detection</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="detectionThreshold">Detection Threshold: <span class="text-highlight" id="thresholdValue">0.5</span></label>
+                        <input 
+                            type="range" 
+                            id="detectionThreshold" 
+                            min="0.0" 
+                            max="1.0" 
+                            step="0.05" 
+                            value="0.5"
+                            class="range-control"
+                        >
+                        <small class="file-input-info">Correlation threshold for bit detection</small>
+                    </div>
+                </div>
+
+                <!-- Advanced Options -->
+                <details class="detail-panel">
+                    <summary>🔧 Advanced Options</summary>
+                    <div class="detail-panel__content">
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="useErrorCorrection">
+                                Enable Error Correction (redundancy checking)
+                            </label>
+                            <small class="file-input-info">Improves message recovery in noisy conditions</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="autoDetect">
+                                Auto-Detect Parameters (experimental)
+                            </label>
+                            <small class="file-input-info">Attempts to automatically determine encoding parameters</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="verboseLogging">
+                                Verbose Logging
+                            </label>
+                            <small class="file-input-info">Show detailed extraction process information</small>
+                        </div>
+                    </div>
+                </details>
+            </div>
+
+            <!-- Step 3: Execute Decoding -->
+            <div class="card mb-3">
+                <h2 class="card-title card-title-primary">
+                    <span class="icon-xl">🚀</span> Step 3: Extract Message
+                </h2>
+                <p class="section-description">Click to start the decoding process</p>
+                
+                <div class="button-group">
+                    <button 
+                        id="decodeBtn" 
+                        class="btn btn-primary btn-large"
+                    >
+                        🔑 Decode Hidden Message
+                    </button>
+                    <button 
+                        id="resetBtn" 
+                        class="btn btn-secondary btn-large"
+                    >
+                        ↻ Reset
+                    </button>
+                </div>
+
+                <!-- Decoding Progress -->
+                <div id="decodingProgress" class="panel hidden">
+                    <p class="panel__text">Extracting message...</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 4: Display Results -->
+            <div class="card hidden" id="resultsSection">
+                <h2 class="card-title card-title-secondary">
+                    <span class="icon-xl">📝</span> Extracted Message
+                </h2>
+
+                <!-- Success Indicator -->
+                <div id="successIndicator" class="panel panel--success hidden">
+                    <p><strong>✓ Message Successfully Recovered</strong></p>
+                    <div class="panel__text panel__flex">
+                        <span>Success Rate: <span class="text-highlight" id="successRate">--%</span></span>
+                        <span>Confidence: <span class="text-highlight" id="confidence">--</span></span>
+                    </div>
+                </div>
+
+                <div id="warningIndicator" class="panel panel--warning hidden">
+                    <p><strong>⚠️ Warning:</strong> Recovery quality is low. Check parameters and try again.</p>
+                </div>
+
+                <!-- Extracted Text -->
+                <div class="form-group">
+                    <label for="extractedMessage">Hidden Message</label>
+                    <textarea 
+                        id="extractedMessage" 
+                        readonly
+                        class="text-area-muted"
+                    ></textarea>
+                </div>
+
+                <!-- Metadata -->
+                <div class="metadata-panel">
+                    <h3>Decoding Metadata</h3>
+                    <div class="metadata-grid">
+                        <div>
+                            <p><strong>Wavelet:</strong> <span id="metaWavelet">-</span></p>
+                            <p><strong>DWT Level:</strong> <span id="metaLevel">-</span></p>
+                        </div>
+                        <div>
+                            <p><strong>Message Length:</strong> <span id="metaLength">-</span> chars</p>
+                            <p><strong>Extraction Time:</strong> <span id="metaTime">-</span> ms</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="button-group">
+                    <button id="copyBtn" class="btn btn-primary btn-small">
+                        📋 Copy Message
+                    </button>
+                    <button id="downloadTxtBtn" class="btn btn-secondary btn-small">
+                        💾 Export as Text
+                    </button>
+                    <button id="decodeAnother" class="btn btn-secondary btn-small">
+                        ➕ Decode Another
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Information Section -->
+    <section class="info-section">
+        <div class="container">
+            <details class="info-box">
+                <summary>ℹ️ Decoding Tips & Troubleshooting</summary>
+                <div>
+                    <h4>Parameter Matching</h4>
+                    <p>The wavelet family and decomposition level <strong>must exactly match</strong> the parameters used during encoding.</p>
+                    
+                    <h4>Sensitivity Tuning</h4>
+                    <p>If decoding fails, try adjusting extraction sensitivity. Lower sensitivity is more lenient but may introduce errors; higher sensitivity is stricter.</p>
+                    
+                    <h4>Error Correction</h4>
+                    <p>Enable error correction if the message is slightly corrupted or if the audio has been compressed or modified.</p>
+                    
+                    <h4>Audio Quality</h4>
+                    <p>Ensure the audio file is in the same format and quality as the original encoded file. Conversions or compressions may prevent recovery.</p>
+                </div>
+            </details>
+        </div>
+    </section>
+
+    <script src="script.js"></script>
+    <script>
+        // Decode page specific functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const stegoAudio = document.getElementById('stegoAudio');
+            const dwLevel = document.getElementById('dwLevel');
+            const sensitivity = document.getElementById('sensitivity');
+            const detectionThreshold = document.getElementById('detectionThreshold');
+            const decodeBtn = document.getElementById('decodeBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const copyBtn = document.getElementById('copyBtn');
+            const downloadTxtBtn = document.getElementById('downloadTxtBtn');
+            const decodeAnother = document.getElementById('decodeAnother');
+
+            // File input handler
+            stegoAudio.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    document.getElementById('audioFileName').textContent = file.name;
+                    document.getElementById('audioFileSize').textContent = (file.size / 1024).toFixed(2) + ' KB';
+                    document.getElementById('audioInfo').style.display = 'block';
+                }
+            });
+
+            // Update slider displays
+            dwLevel.addEventListener('input', function() {
+                document.getElementById('dwLevelValue').textContent = this.value;
+            });
+
+            sensitivity.addEventListener('input', function() {
+                document.getElementById('sensitivityValue').textContent = this.value;
+            });
+
+            detectionThreshold.addEventListener('input', function() {
+                document.getElementById('thresholdValue').textContent = this.value;
+            });
+
+            // Decode button handler
+            decodeBtn.addEventListener('click', function() {
+                const file = stegoAudio.files[0];
+
+                if (!file) {
+                    showStatus('Please select an encoded WAV file', 'error');
+                    return;
+                }
+
+                // Show progress
+                document.getElementById('decodingProgress').style.display = 'block';
+                decodeBtn.disabled = true;
+                
+                // Simulate progress
+                let progress = 0;
+                const interval = setInterval(() => {
+                    progress += Math.random() * 25;
+                    if (progress > 90) progress = 90;
+                    document.getElementById('progressFill').style.width = progress + '%';
+                }, 150);
+
+                // Simulate decoding (replace with actual backend call)
+                setTimeout(() => {
+                    clearInterval(interval);
+                    document.getElementById('progressFill').style.width = '100%';
+                    
+                    // Mock extracted message
+                    const mockMessage = 'Hello from steganography!';
+                    const mockSuccessRate = 95;
+                    const mockConfidence = 'High';
+                    
+                    // Display results
+                    document.getElementById('extractedMessage').value = mockMessage;
+                    document.getElementById('successRate').textContent = mockSuccessRate + '%';
+                    document.getElementById('confidence').textContent = mockConfidence;
+                    document.getElementById('metaWavelet').textContent = document.getElementById('waveletFamily').value;
+                    document.getElementById('metaLevel').textContent = dwLevel.value;
+                    document.getElementById('metaLength').textContent = mockMessage.length;
+                    document.getElementById('metaTime').textContent = Math.floor(Math.random() * 1000 + 500);
+                    
+                    // Show success
+                    if (mockSuccessRate >= 90) {
+                        document.getElementById('successIndicator').style.display = 'block';
+                        document.getElementById('warningIndicator').style.display = 'none';
+                    } else {
+                        document.getElementById('warningIndicator').style.display = 'block';
+                        document.getElementById('successIndicator').style.display = 'none';
+                    }
+                    
+                    document.getElementById('resultsSection').style.display = 'block';
+                    showStatus('✓ Message successfully decoded!', 'success');
+                    
+                    setTimeout(() => {
+                        document.getElementById('decodingProgress').style.display = 'none';
+                        decodeBtn.disabled = false;
+                    }, 1000);
+                }, 2500);
+            });
+
+            // Copy button handler
+            copyBtn.addEventListener('click', function() {
+                const text = document.getElementById('extractedMessage').value;
+                navigator.clipboard.writeText(text).then(() => {
+                    showStatus('✓ Message copied to clipboard!', 'success');
+                });
+            });
+
+            // Download button handler
+            downloadTxtBtn.addEventListener('click', function() {
+                showStatus('Download functionality will be connected to backend', 'info');
+            });
+
+            // Reset button handler
+            resetBtn.addEventListener('click', function() {
+                stegoAudio.value = '';
+                dwLevel.value = '2';
+                document.getElementById('dwLevelValue').textContent = '2';
+                sensitivity.value = '0.5';
+                document.getElementById('sensitivityValue').textContent = '0.5';
+                detectionThreshold.value = '0.5';
+                document.getElementById('thresholdValue').textContent = '0.5';
+                document.getElementById('audioInfo').style.display = 'none';
+                document.getElementById('resultsSection').style.display = 'none';
+                document.getElementById('statusContainer').innerHTML = '';
+                document.getElementById('extractedMessage').value = '';
+            });
+
+            // Decode another handler
+            decodeAnother.addEventListener('click', function() {
+                resetBtn.click();
+            });
+        });
+
+        function showStatus(message, type) {
+            const statusContainer = document.getElementById('statusContainer');
+            const statusBox = document.createElement('div');
+            statusBox.className = 'status-box ' + type;
+            statusBox.innerHTML = `
+                <span class="status-icon">${getStatusIcon(type)}</span>
+                <span>${message}</span>
+            `;
+            statusContainer.innerHTML = '';
+            statusContainer.appendChild(statusBox);
+        }
+
+        function getStatusIcon(type) {
+            const icons = {
+                'success': '✓',
+                'error': '✕',
+                'info': 'ℹ',
+                'warning': '⚠'
+            };
+            return icons[type] || 'ℹ';
+        }
+    </script>
+</body>
+</html>
