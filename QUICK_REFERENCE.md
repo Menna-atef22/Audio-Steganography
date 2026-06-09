@@ -1,152 +1,230 @@
-"""
-QUICK REFERENCE GUIDE - Audio Steganography System
-====================================================
-"""
+# ⚡ Quick Reference Card - Audio Steganography System
 
-COMMAND REFERENCE
-=================
+## 🚀 Start the System (30 seconds)
 
-# Run Quick Demo (10 seconds)
-python scripts/quick_demo.py
+### Windows
+```bash
+START_SERVERS.bat
+```
 
-# Generate Test Data (creates 12 WAV files)
-python scripts/generate_test_data.py
+### macOS/Linux
+```bash
+./start_servers.sh
+```
 
-# Run Full Test Suite
-pytest tests/test_system.py -v
+Then open: **http://localhost:8000**
 
-# Run Specific Test
-pytest tests/test_system.py::TestEncoder::test_basic_encoding -v
+---
 
-# Start Streamlit Web App
-python -m streamlit run app.py
+## 📋 Common Commands
 
-# Start Streamlit in specific browser
-streamlit run app.py --logger.level=debug
+### Generate Test Audio
+```bash
+curl "http://localhost:5000/api/generate-test-audio?duration=3" -o test.wav
+```
 
+### Encode Message
+```bash
+curl -X POST http://localhost:5000/api/encode-download \
+  -F "file=@audio.wav" \
+  -F "message=HELLO" \
+  -o encoded.wav
+```
 
-PYTHON API EXAMPLES
-====================
+### Decode Message
+```bash
+curl -X POST http://localhost:5000/api/decode \
+  -F "file=@encoded.wav"
+```
 
-# === BASIC ENCODING ===
-from core.encoder import encode_audio
-from core.audio_utils import load_audio, save_audio
+### Test Robustness
+```bash
+curl -X POST http://localhost:5000/api/noise-test \
+  -F "file=@encoded.wav" \
+  -F "snr_db=20"
+```
 
-# Load audio file
-audio, sr = load_audio("myaudio.wav")
+### Check API Status
+```bash
+curl http://localhost:5000/api/health
+```
 
-# Hide message
-message = "HELLO WORLD"
-encoded, metadata = encode_audio(audio, message, sr=sr)
+---
 
-# Save encoded audio
-save_audio("encoded.wav", encoded, sr)
+## 🔗 URLs
+| Service | URL |
+|---------|-----|
+| Home | http://localhost:8000 |
+| Encode | http://localhost:8000/encode.html |
+| Decode | http://localhost:8000/decode.html |
+| Noise Test | http://localhost:8000/noise.html |
+| API | http://localhost:5000 |
+| Health Check | http://localhost:5000/api/health |
 
+---
 
-# === BASIC DECODING ===
-from core.decoder import decode_audio
+## 📁 File Locations
 
-# Load encoded audio
-encoded, sr = load_audio("encoded.wav")
+| Purpose | Path |
+|---------|------|
+| API Server | `api_server.py` |
+| Encoder | `core/encoder.py` |
+| Decoder | `core/decoder.py` |
+| Frontend | `frontend/` |
+| Tests | `tests/` |
+| Docs | `*.md` files |
+| Config | `requirements.txt` |
 
-# Extract message
-message, confidence, metadata = decode_audio(encoded, sr=sr)
-print(f"Message: {message}")
-print(f"Confidence: {confidence:.1%}")
+---
 
+## ⚙️ Configuration
 
-# === NOISE TESTING ===
-from core.noise_test import add_gaussian_noise
+### Change API Port
+Edit last line of `api_server.py`:
+```python
+app.run(debug=False, host='0.0.0.0', port=5001)  # Change 5000 → 5001
+```
 
-# Add noise at 20 dB SNR
-noisy = add_gaussian_noise(encoded, snr_db=20)
+### Change Web Port
+```bash
+python -m http.server 9000 --directory frontend
+```
 
-# Try to decode from noisy audio
-message, confidence, _ = decode_audio(noisy, sr=sr)
-print(f"Decoded from noise: {message}")
+### Enable Debug Mode
+```python
+# In api_server.py
+app.run(debug=True, port=5000)
+```
 
+---
 
-# === PERFORMANCE ANALYSIS ===
-from core.metrics import generate_performance_report, print_report
+## 🧪 Quick Tests
 
-report = generate_performance_report(
-    original_message="HELLO WORLD",
-    recovered_message="HELLO WORLD",
-    original_audio=audio,
-    encoded_audio=encoded,
-    confidence=0.98
-)
+### Test 1: API Alive?
+```bash
+curl http://localhost:5000/api/health
+```
 
-print_report(report)
+### Test 2: Can Encode?
+```bash
+curl -X POST http://localhost:5000/api/encode-download \
+  -F "file=@test.wav" -F "message=TEST" -o out.wav && echo "✅ Encode OK"
+```
 
+### Test 3: Can Decode?
+```bash
+curl -X POST http://localhost:5000/api/decode \
+  -F "file=@encoded.wav" | grep -q "message" && echo "✅ Decode OK"
+```
 
-# === ADVANCED: CUSTOM ENCODER/DECODER ===
-from core.encoder import SteganoEncoder
-from core.decoder import SteganoDecoder
+---
 
-# Create custom encoder
-encoder = SteganoEncoder(
-    sr=44100,
-    window_size=512,  # Larger window = more robustness
-    hop_length=256    # 50% overlap
-)
+## 📊 Key Limits
 
-# Encode with custom parameters
-encoded, metadata = encoder.encode(audio, "SECRET MESSAGE")
+| Parameter | Value | Notes |
+|-----------|-------|-------|
+| Max Message Length | ~12 chars | For 3-second audio |
+| Sample Rate | 44.1-48 kHz | Standard rates |
+| File Format | WAV, PCM, 16-bit | MP3/OGG not supported |
+| Max File Size | 50 MB | Upload limit |
+| Audio Quality | Imperceptible | SNR: 19-20 dB |
+| Robustness | ±20 dB SNR | Can survive noise |
+| Capacity | ~4 bits/sec | Depends on parameters |
 
-# Create decoder with same parameters
-decoder = SteganoDecoder(sr=44100, window_size=512, hop_length=256)
+---
 
-# Decode with sensitivity tuning
-message, confidence, metadata = decoder.decode(
-    encoded,
-    sensitivity=0.5  # 0.0 = very lenient, 1.0 = very strict
-)
+## 🎯 Workflow Examples
 
+### Scenario 1: Encode a Message
+```
+1. Open http://localhost:8000/encode.html
+2. Click "Generate Test Audio"
+3. Type: HELLO
+4. Click "Encode & Download"
+5. ✅ File downloaded: encoded_test_audio_3s.wav
+```
 
-PARAMETER TUNING
-=================
+### Scenario 2: Decode a Message
+```
+1. Open http://localhost:8000/decode.html
+2. Upload: encoded_test_audio_3s.wav
+3. Click "Decode"
+4. ✅ Shows: HELLO (97.85% confidence)
+```
 
-Window Size:
-  256  → Faster, lower latency, less frequency resolution
-  512  → Balanced (default)
-  1024 → Better frequency resolution, more robust to noise
+### Scenario 3: Test Noise Robustness
+```
+1. Open http://localhost:8000/noise.html
+2. Upload: encoded_test_audio_3s.wav
+3. Set SNR: 20 dB
+4. Click "Test"
+5. ✅ Shows: Message recoverable despite noise
+```
 
-Hop Length (samples):
-  64   → 4x overlap, slower but more robust
-  128  → 2x overlap, balanced
-  256  → 1x (50% overlap), default
-  512  → Faster, less robust
+---
 
-Sensitivity (0.0 - 1.0):
-  0.3  → Very lenient, recovers more but less accurate
-  0.5  → Balanced (default)
-  0.7  → Strict, only recovers if very confident
-  1.0  → Extremely strict, rarely recovers
+## 🐛 Error Messages & Fixes
 
-Embedding Strength (0.0 - 1.0):
-  0.5  → Light, very imperceptible
-  0.7  → Balanced
-  1.0  → Maximum, most robust but more audible
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Connection refused | API not running | Run `python api_server.py` |
+| Message too long | > 12 chars | Use shorter message or longer audio |
+| No file provided | File not uploaded | Select file in UI |
+| CORS error | Frontend can't reach API | Check both servers running |
+| Module not found | Missing dependency | Run `pip install -r requirements.txt` |
+| Port in use | Another app using port | Kill existing process or use different port |
 
+---
 
-TROUBLESHOOTING
-=================
+## 📚 Documentation Quick Links
 
-Problem: "File is not a valid WAV file"
-Solution: Ensure file is PCM WAV (16-bit, 44.1/48 kHz)
+| Document | Purpose |
+|----------|---------|
+| README.md | Full project overview |
+| QUICK_START.md | First-time setup |
+| SETUP_GUIDE.md | Detailed installation |
+| TESTING_GUIDE.md | How to test everything |
+| SYSTEM_FLOW.md | Architecture & flow diagrams |
+| SESSION_UPDATE.md | What's new in this session |
 
-Problem: Low confidence scores (<50%)
-Solution: Lower sensitivity value, or check SNR of audio
+---
 
-Problem: Empty decoded message
-Solution: Check window_size and hop_length match encoding
+## ✨ Performance Tips
 
-Problem: ImportError for streamlit
-Solution: pip install streamlit>=1.28.0
+### Faster Encoding
+- Reduce DWT level (2 instead of 3)
+- Increase chip_rate (256 instead of 128)
+- Use shorter audio
 
-Problem: Slow encoding/decoding
-Solution: Use smaller window_size (256) or fewer samples
+### Better Recovery
+- Increase DWT level (4 instead of 3)
+- Decrease chip_rate (64 instead of 128)
+- Use longer audio
+
+### More Robust to Noise
+- Increase embedding strength
+- Use lower frequencies
+- Add redundancy
+
+---
+
+## ⏱️ Typical Durations
+
+| Task | Time |
+|------|------|
+| Install dependencies | 2-3 min |
+| Start servers | 5 sec |
+| Generate 3s test audio | 0.1 sec |
+| Encode 3s message | 0.5 sec |
+| Decode 3s audio | 0.3 sec |
+| Full workflow (encode + decode) | 2 sec |
+| Run all tests | 1 sec |
+
+---
+
+**Everything working? You're ready to go! 🎉**
+
+For help: See README.md or SETUP_GUIDE.md
 
 Problem: Audio quality issues
 Solution: Reduce embedding strength or use larger window
@@ -340,7 +418,7 @@ Key Commands:
   python scripts/quick_demo.py        → Quick test
   python scripts/generate_test_data.py → Test files
   pytest tests/test_system.py -v      → Run tests
-  streamlit run app.py                → Web app
+  frontend/index.html                 → Web UI
 
 See QUICK_REFERENCE.md for complete examples!
 """)

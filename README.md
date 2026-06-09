@@ -29,12 +29,7 @@ A complete **STFT-based audio steganography system** for hiding secret alphanume
 
 ```
 Audio-Steganography/
-├── app.py                      # Streamlit home page
-│
-├── pages/
-│   ├── 1_Encoding.py          # Hide messages in audio
-│   ├── 2_Decoding.py          # Extract messages
-│   └── 3_NoiseTest.py         # Test robustness
+├── app.py                      # CLI/info helper (no Streamlit)
 │
 ├── core/
 │   ├── encoder.py             # STFT + phase modulation
@@ -75,39 +70,99 @@ cd Audio-Steganography
 pip install -r requirements.txt
 ```
 
-### 2. Run the Web Application
+### 2. Start the Web Interface & API
 
+The system uses a **Flask REST API backend** (port 5000) and a **static HTML frontend** (port 8000).
+
+#### **Option A: Automatic (Recommended)**
+
+**Windows:**
 ```bash
-# Start Streamlit app
-python -m streamlit run app.py
-
-# Or use the web frontend
-# Open frontend/index.html in a browser
+START_SERVERS.bat
 ```
+
+**macOS / Linux:**
+```bash
+chmod +x start_servers.sh
+./start_servers.sh
+```
+
+This will start both servers automatically. Then open **http://localhost:8000** in your browser.
+
+#### **Option B: Manual
+
+**Terminal 1 - Start Flask API Server:**
+```bash
+python api_server.py
+# API running at http://localhost:5000
+```
+
+**Terminal 2 - Start Static Web Server:**
+```bash
+python -m http.server 8000 --directory frontend
+# Serving at http://localhost:8000
+```
+
+Then open **http://localhost:8000** in your browser.
 
 ### 3. Usage
 
 #### **Encoding a Message**
-1. Go to **Encoding** page
-2. Upload a WAV audio file
-3. Enter your secret message (alphanumeric + spaces)
-4. Configure parameters (window size, hop length, strength)
-5. Click "Encode" to hide the message
-6. Download the encoded audio
+1. Go to **Encoding** page (http://localhost:8000/encode.html)
+2. Upload a WAV audio file or generate test audio
+3. Enter your secret message (alphanumeric + spaces, max 12 chars for 3-second audio)
+4. Click "Encode & Download" 
+5. The encoded audio will automatically download
+6. Listen to it - it should sound virtually identical to the original!
 
 #### **Decoding a Message**
 1. Go to **Decoding** page
-2. Upload the encoded audio file
-3. Set decoding parameters (must match encoding)
-4. Click "Decode" to extract the message
-5. View extracted message with confidence score
+2. Upload an encoded audio file
+3. Click "Decode" to extract the message
+4. View the extracted message with confidence score
 
 #### **Testing Robustness**
 1. Go to **Noise Testing** page
 2. Upload encoded audio
-3. Select noise type and SNR level
-4. Click "Run Test" to apply noise and attempt decoding
-5. View recovery success and metrics
+3. Select SNR level (lower = more noise)
+4. Click "Test" to add noise and attempt decoding
+5. See if the message can be recovered despite the noise
+
+#### **Using Test Audio**
+- Click "Generate Test Audio" to create a clean 3-second test file
+- This is perfect for testing encoding without uploading your own files
+
+## 🔗 API Endpoints
+
+The Flask backend provides REST API endpoints for integration:
+
+| Method | Endpoint | Purpose |
+|--------|----------|---------|
+| POST | `/api/encode` | Encode and return metadata |
+| POST | `/api/encode-download` | Encode and return WAV file |
+| POST | `/api/decode` | Decode audio and return message |
+| GET | `/api/generate-test-audio` | Generate test audio for download |
+| POST | `/api/noise-test` | Add noise and test decoding |
+| GET | `/api/health` | Check API server status |
+
+**Example Usage:**
+```bash
+# Encode a message
+curl -X POST http://localhost:5000/api/encode-download \
+  -F "file=@audio.wav" \
+  -F "message=HELLO" \
+  -o encoded_audio.wav
+
+# Decode a message
+curl -X POST http://localhost:5000/api/decode \
+  -F "file=@encoded_audio.wav"
+
+# Generate test audio
+curl http://localhost:5000/api/generate-test-audio?duration=3.0 \
+  -o test_audio.wav
+```
+
+### 4. Usage (Advanced)
 
 ## 🔬 How It Works
 
@@ -360,7 +415,7 @@ This project implements a secure method for hiding secret messages within audio 
 - Discrete Wavelet Transform (DWT)
 - Spread Spectrum Modulation
 - Python Audio Processing (librosa, soundfile)
-- Web UI (Streamlit)
+- Web UI (Static HTML/CSS/JS)
 
 ## Project Structure
 
@@ -395,25 +450,27 @@ Audio-Steganography/
 
 ## Running the Application
 
-Start the Streamlit web application:
+Open the static frontend in your browser:
 
 ```bash
-streamlit run app.py
-```
+# On Windows
+start frontend/index.html
 
-The application will open in your default web browser at `http://localhost:8501`.
+# On macOS / Linux
+open frontend/index.html
+```
 
 ### Pages
 
-1. **Home** (`app.py`): Overview and navigation
-2. **Encoding** (`pages/1_Encoding.py`): Hide messages in audio files
-3. **Decoding** (`pages/2_Decoding.py`): Extract hidden messages from audio
+1. **Home** (`frontend/index.html`): Overview and navigation
+2. **Encoding** (`frontend/encode.html`): Hide messages in audio files
+3. **Decoding** (`frontend/decode.html`): Extract hidden messages from audio
 
 ## Current Status
 
 ✅ **Completed:**
 - Project structure
-- Streamlit UI skeleton
+- Static HTML/CSS/JS UI skeleton
 - Page layouts and components
 
 ⏳ **To Be Implemented:**
@@ -425,9 +482,10 @@ The application will open in your default web browser at `http://localhost:8501`
 ## Requirements
 
 - Python 3.8+
-- streamlit
 - scipy
 - numpy
+- soundfile
+- matplotlib
 - librosa
 - soundfile
 - pydub

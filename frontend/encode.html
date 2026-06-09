@@ -230,8 +230,10 @@
         </div>
     </section>
 
-    <script src="script.js"></script>
     <script>
+        // API Configuration
+        const API_URL = 'http://localhost:5000';
+        
         // Encode page specific functionality
         document.addEventListener('DOMContentLoaded', function() {
             const audioFile = document.getElementById('audioFile');
@@ -299,17 +301,38 @@
                 document.getElementById('encodingProgress').style.display = 'block';
                 encodeBtn.disabled = true;
                 
-                // Simulate progress
-                let progress = 0;
-                const interval = setInterval(() => {
-                    progress += Math.random() * 30;
-                    if (progress > 90) progress = 90;
-                    document.getElementById('progressFill').style.width = progress + '%';
-                }, 100);
+                // Create FormData
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('message', message);
+                formData.append('wavelet', document.getElementById('waveletFamily').value);
+                formData.append('level', document.getElementById('dwLevel').value);
+                formData.append('alpha', document.getElementById('embeddingStrength').value);
 
-                // Simulate encoding (replace with actual backend call)
-                setTimeout(() => {
-                    clearInterval(interval);
+                // Call API
+                fetch(`${API_URL}/api/encode-download`, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => { throw new Error(err.error); });
+                    }
+                    return response.blob().then(blob => {
+                        // Trigger download
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `encoded_${file.name}`;
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                        a.remove();
+                        
+                        return blob;
+                    });
+                })
+                .then(() => {
                     document.getElementById('progressFill').style.width = '100%';
                     
                     // Display results
@@ -319,13 +342,31 @@
                     document.getElementById('paramStrength').textContent = embeddingStrength.value;
                     
                     document.getElementById('downloadSection').style.display = 'block';
-                    showStatus('✓ Message successfully encoded!', 'success');
+                    showStatus('✓ Message successfully encoded and downloaded!', 'success');
                     
                     setTimeout(() => {
                         document.getElementById('encodingProgress').style.display = 'none';
                         encodeBtn.disabled = false;
                     }, 1000);
-                }, 2000);
+                })
+                .catch(error => {
+                    showStatus('❌ Error: ' + error.message, 'error');
+                    document.getElementById('encodingProgress').style.display = 'none';
+                    encodeBtn.disabled = false;
+                });
+
+                // Simulate progress
+                let progress = 0;
+                const interval = setInterval(() => {
+                    progress += Math.random() * 30;
+                    if (progress > 90) progress = 90;
+                    document.getElementById('progressFill').style.width = progress + '%';
+                }, 100);
+                
+                // Stop simulation when done
+                setTimeout(() => {
+                    clearInterval(interval);
+                }, 5000);
             });
 
             // Reset button handler
@@ -344,9 +385,9 @@
                 document.getElementById('statusContainer').innerHTML = '';
             });
 
-            // Download button handler
+            // Download button handler (file is already downloaded in encode click handler)
             document.getElementById('downloadBtn').addEventListener('click', function() {
-                showStatus('Download functionality will be connected to backend', 'info');
+                showStatus('✓ File was already downloaded!', 'success');
             });
 
             // Encode another button handler

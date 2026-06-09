@@ -115,23 +115,22 @@ BACKEND IMPLEMENTATION CHECKLIST
   ✅ All returns as structured dicts
 
 
-STREAMLIT FRONTEND CHECKLIST
+STATIC FRONTEND CHECKLIST
 =============================
 
-✅ app.py
+✅ frontend/index.html
   ✅ Home page with system overview
   ✅ Educational content about steganography
   ✅ Algorithm explanation (STFT + phase modulation)
-  ✅ Technical specifications table
-  ✅ Navigation links to other pages
-  ✅ Sidebar with page selection
-  ✅ Professional layout and styling
+  ✅ Technical specifications
+  ✅ Navigation links to frontend pages
+  ✅ Responsive layout and styling
 
-✅ pages/1_Encoding.py
+✅ frontend/encode.html
   ✅ File upload widget with validation
   ✅ Message input field
   ✅ Validation: alphanumeric + spaces only
-  ✅ Parameter sliders:
+  ✅ Parameter controls:
     ✅ Window size (256, 512, 1024)
     ✅ Hop length (128, 256, 512)
     ✅ Embedding strength (0.1-1.0)
@@ -141,9 +140,9 @@ STREAMLIT FRONTEND CHECKLIST
   ✅ Display metadata about encoding
   ✅ Error handling and user feedback
 
-✅ pages/2_Decoding.py
+✅ frontend/decode.html
   ✅ File upload widget for encoded audio
-  ✅ Parameter controls (matching encoding):
+  ✅ Parameter controls:
     ✅ Window size
     ✅ Hop length
     ✅ Sensitivity slider (0.0-1.0)
@@ -156,7 +155,7 @@ STREAMLIT FRONTEND CHECKLIST
   ✅ Display detailed metrics
   ✅ Error handling
 
-✅ pages/3_NoiseTest.py
+✅ frontend/noise.html
   ✅ File upload for encoded audio
   ✅ Noise type selection:
     ✅ Gaussian
@@ -344,7 +343,6 @@ DOCUMENTATION CHECKLIST
   ✅ Debugging tips
 
 ✅ requirements.txt
-  ✅ streamlit>=1.28.0
   ✅ numpy>=1.24.0
   ✅ scipy>=1.12.0
   ✅ soundfile>=0.12.0
@@ -404,7 +402,7 @@ DEPLOYMENT READINESS CHECKLIST
 ✅ No missing imports
 ✅ All files in correct directories
 ✅ Python syntax valid (all files)
-✅ Streamlit imports working
+✅ Core dependencies working
 ✅ NumPy/SciPy functional
 ✅ Audio I/O working
 ✅ STFT operations tested
@@ -425,7 +423,7 @@ NEXT STEPS FOR USER
 ===================
 
 1. ✅ Verify installation:
-   python -c "import streamlit; import scipy; import numpy; print('OK')"
+   python -c "import scipy; import numpy; print('OK')"
 
 2. ✅ Run quick demo:
    python scripts/quick_demo.py
@@ -439,11 +437,7 @@ NEXT STEPS FOR USER
    pytest tests/test_system.py -v
    (All 15+ tests should pass)
 
-5. ✅ Start web app:
-   python -m streamlit run app.py
-   (Opens browser to http://localhost:8501)
-
-6. ✅ Open frontend:
+5. ✅ Open frontend:
    Open frontend/index.html in web browser
    (Pure HTML/CSS/JS - no backend needed)
 
@@ -473,7 +467,7 @@ print("""
 ╚════════════════════════════════════════════════════════════════╝
 
 ✅ Backend DSP Modules          [COMPLETE]
-✅ Streamlit Web Interface      [COMPLETE]
+✅ HTML/CSS/JS Web Interface    [COMPLETE]
 ✅ HTML5/CSS3 Frontend          [COMPLETE]
 ✅ Test Suite                   [COMPLETE]
 ✅ Data Generation Scripts      [COMPLETE]

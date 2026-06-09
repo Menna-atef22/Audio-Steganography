@@ -53,41 +53,41 @@ PROJECT DELIVERABLES
    - Performance reporting
    - Human-readable report formatting
 
-✅ WEB APPLICATION (Streamlit)
+✅ STATIC WEB FRONTEND
 ================================
 
-1. app.py (80+ lines)
+1. frontend/index.html (HTML homepage)
    - Home page with system overview
    - Educational content about steganography
    - Navigation guide
    - Technical specifications
 
-2. pages/1_Encoding.py (250+ lines)
+2. frontend/encode.html (HTML encode page)
    - File upload with validation
    - Message input with alphanumeric validation
-   - Configurable STFT parameters
-   - Progress tracking
-   - Download functionality
+   - Configurable STFT parameter controls
+   - Encode button and progress feedback
+   - Download encoded audio as WAV
    - Encoding metadata display
-   - Interactive explanations
+   - Error handling and user guidance
 
-3. pages/2_Decoding.py (280+ lines)
+3. frontend/decode.html (HTML decode page)
    - Encoded audio upload
-   - Parameter matching interface
+   - Parameter controls for matching encoding
    - Sensitivity slider control
-   - Real-time message extraction
+   - Message extraction display
    - Confidence scoring display
    - Copy and export options
-   - Detailed metadata view
+   - Detailed metrics view
 
-4. pages/3_NoiseTest.py (320+ lines)
+4. frontend/noise.html (HTML noise testing page)
    - Encoded audio upload
-   - Multiple noise type selection
-   - SNR (dB) slider configuration
+   - Noise type selection
+   - SNR slider configuration
    - Preset scenarios (Clean, Light, Moderate, Heavy)
    - Decoding after noise application
    - Waveform visualization
-   - Comprehensive metrics display
+   - Metrics display and results summary
    - Educational content
 
 ✅ FRONTEND (HTML5 + CSS3 + JavaScript)
@@ -225,7 +225,6 @@ README.md (500+ lines)
    - Educational content
 
 requirements.txt
-   - streamlit>=1.28.0
    - numpy>=1.24.0
    - scipy>=1.12.0
    - soundfile>=0.12.0
@@ -298,10 +297,7 @@ QUICK START GUIDE
 4. RUN TESTS:
    pytest tests/test_system.py -v
 
-5. START WEB APP:
-   python -m streamlit run app.py
-
-6. OPEN FRONTEND:
+5. OPEN FRONTEND:
    Open frontend/index.html in browser
 
 USAGE EXAMPLES
@@ -370,7 +366,7 @@ VERIFICATION CHECKLIST
 ✅ Majority voting improves robustness
 ✅ Works with 3x redundancy
 ✅ Noise testing framework complete
-✅ Streamlit UI fully functional
+✅ Static frontend fully functional
 ✅ HTML/CSS/JS frontend production-ready
 ✅ Comprehensive documentation
 ✅ Full test suite passes
@@ -387,7 +383,7 @@ NEXT STEPS FOR USER:
 1. Run quick_demo.py to verify installation
 2. Generate test data with generate_test_data.py
 3. Run full test suite with pytest
-4. Launch web app with streamlit
+4. Launch the frontend in a browser
 5. Use frontend for interactive testing
 """
 
@@ -397,7 +393,7 @@ print("""
 ╚════════════════════════════════════════════════════════════════╝
 
 ✅ BACKEND: STFT-based encoder/decoder with 3x redundancy
-✅ FRONTEND: HTML5/CSS3 web interface + Streamlit app
+✅ FRONTEND: HTML5/CSS3 web interface
 ✅ TESTING: Comprehensive test suite with noise robustness
 ✅ DOCUMENTATION: Complete API reference and user guides
 ✅ SCRIPTS: Data generation and demo scripts included
@@ -408,7 +404,7 @@ Quick Start:
   1. python scripts/quick_demo.py          (test encoding/decoding)
   2. python scripts/generate_test_data.py  (create test files)
   3. pytest tests/test_system.py -v       (run full test suite)
-  4. streamlit run app.py                  (start web app)
+  4. open frontend/index.html                 (start web UI)
 
 See README.md for complete documentation.
 """)

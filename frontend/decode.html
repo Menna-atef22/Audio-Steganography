@@ -274,6 +274,9 @@
 
     <script src="script.js"></script>
     <script>
+        // API Configuration
+        const API_URL = 'http://localhost:5000';
+        
         // Decode page specific functionality
         document.addEventListener('DOMContentLoaded', function() {
             const stegoAudio = document.getElementById('stegoAudio');
@@ -322,6 +325,65 @@
                 document.getElementById('decodingProgress').style.display = 'block';
                 decodeBtn.disabled = true;
                 
+                // Create FormData
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('wavelet', document.getElementById('waveletFamily').value);
+                formData.append('level', document.getElementById('dwLevel').value);
+                formData.append('sensitivity', document.getElementById('sensitivity').value);
+
+                // Call API
+                fetch(`${API_URL}/api/decode`, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => { throw new Error(err.error); });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        const confidence = Math.round(data.confidence * 100);
+                        
+                        // Display results
+                        document.getElementById('extractedMessage').value = data.message || '(empty message)';
+                        document.getElementById('successRate').textContent = confidence + '%';
+                        document.getElementById('confidence').textContent = 
+                            confidence >= 90 ? 'High' : confidence >= 70 ? 'Medium' : 'Low';
+                        document.getElementById('metaWavelet').textContent = document.getElementById('waveletFamily').value;
+                        document.getElementById('metaLevel').textContent = dwLevel.value;
+                        document.getElementById('metaLength').textContent = (data.message || '').length;
+                        document.getElementById('metaTime').textContent = '< 100 ms';
+                        
+                        // Show success
+                        if (confidence >= 90) {
+                            document.getElementById('successIndicator').style.display = 'block';
+                            document.getElementById('warningIndicator').style.display = 'none';
+                        } else if (confidence >= 50) {
+                            document.getElementById('warningIndicator').style.display = 'block';
+                            document.getElementById('successIndicator').style.display = 'none';
+                        }
+                        
+                        document.getElementById('resultsSection').style.display = 'block';
+                        showStatus('✓ Message successfully decoded! Confidence: ' + confidence + '%', 'success');
+                    } else {
+                        throw new Error('Decoding failed');
+                    }
+                    
+                    document.getElementById('progressFill').style.width = '100%';
+                    setTimeout(() => {
+                        document.getElementById('decodingProgress').style.display = 'none';
+                        decodeBtn.disabled = false;
+                    }, 1000);
+                })
+                .catch(error => {
+                    showStatus('❌ Error: ' + error.message, 'error');
+                    document.getElementById('decodingProgress').style.display = 'none';
+                    decodeBtn.disabled = false;
+                });
+
                 // Simulate progress
                 let progress = 0;
                 const interval = setInterval(() => {
@@ -329,43 +391,11 @@
                     if (progress > 90) progress = 90;
                     document.getElementById('progressFill').style.width = progress + '%';
                 }, 150);
-
-                // Simulate decoding (replace with actual backend call)
+                
+                // Stop simulation when done
                 setTimeout(() => {
                     clearInterval(interval);
-                    document.getElementById('progressFill').style.width = '100%';
-                    
-                    // Mock extracted message
-                    const mockMessage = 'Hello from steganography!';
-                    const mockSuccessRate = 95;
-                    const mockConfidence = 'High';
-                    
-                    // Display results
-                    document.getElementById('extractedMessage').value = mockMessage;
-                    document.getElementById('successRate').textContent = mockSuccessRate + '%';
-                    document.getElementById('confidence').textContent = mockConfidence;
-                    document.getElementById('metaWavelet').textContent = document.getElementById('waveletFamily').value;
-                    document.getElementById('metaLevel').textContent = dwLevel.value;
-                    document.getElementById('metaLength').textContent = mockMessage.length;
-                    document.getElementById('metaTime').textContent = Math.floor(Math.random() * 1000 + 500);
-                    
-                    // Show success
-                    if (mockSuccessRate >= 90) {
-                        document.getElementById('successIndicator').style.display = 'block';
-                        document.getElementById('warningIndicator').style.display = 'none';
-                    } else {
-                        document.getElementById('warningIndicator').style.display = 'block';
-                        document.getElementById('successIndicator').style.display = 'none';
-                    }
-                    
-                    document.getElementById('resultsSection').style.display = 'block';
-                    showStatus('✓ Message successfully decoded!', 'success');
-                    
-                    setTimeout(() => {
-                        document.getElementById('decodingProgress').style.display = 'none';
-                        decodeBtn.disabled = false;
-                    }, 1000);
-                }, 2500);
+                }, 5000);
             });
 
             // Copy button handler
